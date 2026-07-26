@@ -3,9 +3,7 @@ package vegabobo.languageselector.ui.screen.main
 import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.os.Handler
-import android.os.Looper
-import androidx.compose.runtime.mutableStateOf
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.superuser.Shell
@@ -32,11 +30,8 @@ class MainScreenVm @Inject constructor(
     private val _uiState = MutableStateFlow(MainScreenState())
     val uiState: StateFlow<MainScreenState> = _uiState.asStateFlow()
     var lastSelectedApp: AppInfo? = null
-    val dao = appInfoDb.appInfoDao()
-
-    fun getIndexFromAppInfoItem(): Int {
-        return _uiState.value.listOfApps.indexOfFirst { it.pkg == lastSelectedApp?.pkg }
-    }
+        private set
+    private val dao = appInfoDb.appInfoDao()
 
     fun loadOperationMode() {
         if (Shell.getShell().isAlive)
@@ -83,14 +78,28 @@ class MainScreenVm @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.operationMode == OperationMode.NONE)
                 loadOperationMode()
-            val packageList = getInstalledPackages().map { parseAppInfo(it) }
-            var sortedList =
-                packageList.sortedBy { it.name.lowercase() }.sortedBy { !it.isModified() }
-            _uiState.value.listOfApps.clear()
-            _uiState.value.listOfApps.addAll(sortedList)
-            _uiState.update { it.copy(isLoading = false) }
+
+            if (_uiState.value.operationMode == OperationMode.NONE) {
+                // Nothing can be read without Shizuku or root. Stop here so the UI leaves the
+                // loading state and shows the permission dialog; parseAppInfo() would otherwise
+                // block for 20s waiting for a service that will never connect, and then throw.
+                _uiState.update { it.copy(listOfApps = emptyList(), isLoading = false) }
+                return@launch
+            }
+
+            val sortedList = runCatching {
+                getInstalledPackages().map { parseAppInfo(it) }.sortedApps()
+            }.getOrElse {
+                Log.e(BuildConfig.APPLICATION_ID, "Could not read the installed apps", it)
+                emptyList()
+            }
+            _uiState.update { it.copy(listOfApps = sortedList, isLoading = false) }
         }
     }
+
+    /** Modified apps first, alphabetically within each group. */
+    private fun List<AppInfo>.sortedApps(): List<AppInfo> =
+        sortedWith(compareBy({ !it.isModified() }, { it.name.lowercase() }))
 
     fun getInstalledPackages(): List<ApplicationInfo> {
         return app.packageManager.getInstalledApplications(
@@ -104,74 +113,37 @@ class MainScreenVm @Inject constructor(
     }
 
     fun toggleDropdown() {
-        val newDropdownVisibility = !uiState.value.isDropdownVisible
-        _uiState.update { it.copy(isDropdownVisible = newDropdownVisibility) }
+        _uiState.update { it.copy(isDropdownVisible = !it.isDropdownVisible) }
     }
 
     fun toggleSystemAppsVisibility() {
-        val newShowSystemApps = !uiState.value.isShowSystemAppsHome
         _uiState.update {
             it.copy(
-                isLoading = true,
-                isShowSystemAppsHome = newShowSystemApps
+                isShowSystemAppsHome = !it.isShowSystemAppsHome,
+                isDropdownVisible = false
             )
         }
-        fillListOfApps()
-        toggleDropdown()
     }
 
+    /**
+     * Retry after the user has granted Shizuku access. This has to reload the app list too:
+     * the first attempt gave up before reading anything.
+     */
     fun onClickProceedShizuku() {
-        loadOperationMode()
-    }
-
-    val searchQuery = mutableStateOf("")
-    private val handler = Handler(Looper.getMainLooper())
-    private var workRunnable: Runnable? = null
-
-    fun onSearchTextFieldChange(newText: String) {
-        _uiState.update { it.copy(searchTextFieldValue = newText) }
-
-        if (workRunnable != null)
-            handler.removeCallbacks(workRunnable!!)
-
-        workRunnable = Runnable { searchQuery.value = newText }
-        handler.postDelayed(workRunnable!!, 1000)
-    }
-
-    fun onSearchExpandedChange() {
-        val isExpanded = !uiState.value.isExpanded
-        _uiState.update { it.copy(isExpanded = isExpanded) }
-        if (isExpanded)
-            updateHistory()
-        else
-            _uiState.update { it.copy(searchTextFieldValue = "") }
-    }
-
-    fun onSelectedLabelChange(label: AppLabels) {
-        val lb = _uiState.value.selectLabels
-        if (lb.contains(label))
-            lb.remove(label)
-        else
-            lb.add(label)
+        _uiState.update { it.copy(isLoading = true) }
+        fillListOfApps()
     }
 
     fun updateHistory() {
         viewModelScope.launch(Dispatchers.IO) {
-            val appInfoList = dao.getHistory().map { it.pkg }
-            val history = appInfoList.mapNotNull { pkg ->
-                val listOfApps = _uiState.value.listOfApps
-                val idx = listOfApps.indexOfFirst { it.pkg == pkg }
-                if (idx == -1)
-                    null
-                else
-                    listOfApps[idx]
-            }
-            _uiState.value.history.clear()
-            _uiState.value.history.addAll(history)
+            val historyPkgs = dao.getHistory().map { it.pkg }
+            val apps = _uiState.value.listOfApps.associateBy { it.pkg }
+            val history = historyPkgs.mapNotNull { apps[it] }
+            _uiState.update { it.copy(history = history) }
         }
     }
 
-    fun addAppToHistory(ai: AppInfo) {
+    private fun addAppToHistory(ai: AppInfo) {
         viewModelScope.launch(Dispatchers.IO) {
             if (dao.findByPkg(ai.pkg) == null) {
                 dao.insert(ai.toAppInfoEntity())
@@ -188,23 +160,33 @@ class MainScreenVm @Inject constructor(
         }
     }
 
+    /**
+     * Called when coming back from the app language screen: the app may have gained or lost its
+     * locale override, which moves it to the other end of the list.
+     */
     fun reloadLastSelectedItem() {
-        if (lastSelectedApp == null) return
-        val pkg = app.packageManager.getApplicationInfo(lastSelectedApp!!.pkg, 0)
-        val updatedAi = parseAppInfo(pkg)
-        val apps = _uiState.value.listOfApps
-        val idx = apps.indexOfFirst { it.pkg == updatedAi.pkg }
-        if (idx != -1 && updatedAi.labels != apps[idx].labels) {
-            apps[idx] = updatedAi
-            val newList = _uiState.value.listOfApps.sortedBy { it.name.lowercase() }
-                .sortedBy { !it.isModified() }.toMutableList()
+        val selected = lastSelectedApp ?: return
+        // parseAppInfo() talks to the privileged service and can block; keep it off the main
+        // thread, where this used to run straight from composition.
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = runCatching {
+                parseAppInfo(app.packageManager.getApplicationInfo(selected.pkg, 0))
+            }.getOrElse {
+                Log.e(BuildConfig.APPLICATION_ID, "Could not refresh ${selected.pkg}", it)
+                return@launch
+            }
+            val apps = _uiState.value.listOfApps
+            val index = apps.indexOfFirst { it.pkg == updated.pkg }
+            if (index == -1 || apps[index].labels == updated.labels) return@launch
+
+            val newList = apps.toMutableList().apply { this[index] = updated }.sortedApps()
             _uiState.update {
                 it.copy(
                     listOfApps = newList,
-                    snackBarDisplay = if (updatedAi.isModified()) SnackBarDisplay.MOVED_TO_TOP else SnackBarDisplay.MOVED_TO_BOTTOM
+                    snackBarDisplay = if (updated.isModified()) SnackBarDisplay.MOVED_TO_TOP
+                    else SnackBarDisplay.MOVED_TO_BOTTOM
                 )
             }
-            return
         }
     }
 

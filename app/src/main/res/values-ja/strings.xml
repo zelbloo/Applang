@@ -5,6 +5,8 @@
     <string name="search">アプリを検索</string>
     <string name="search_empty_hint">入力してアプリを検索</string>
     <string name="search_recent">最近</string>
+    <string name="search_no_results">一致するアプリはありません</string>
+    <string name="no_apps">表示できるアプリがありません</string>
     <string name="clear">消去</string>
     <string name="filter_system_apps">システムアプリ</string>
     <string name="filter_modified">変更済み</string>

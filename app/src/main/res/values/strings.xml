@@ -5,6 +5,8 @@
     <string name="search">Search apps</string>
     <string name="search_empty_hint">Type to search your apps</string>
     <string name="search_recent">Recent</string>
+    <string name="search_no_results">No apps match your search</string>
+    <string name="no_apps">No apps to show</string>
     <string name="clear">Clear</string>
     <string name="filter_system_apps">System apps</string>
     <string name="filter_modified">Modified</string>

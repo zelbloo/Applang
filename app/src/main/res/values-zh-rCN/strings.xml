@@ -5,6 +5,8 @@
     <string name="search">搜索应用</string>
     <string name="search_empty_hint">输入以搜索应用</string>
     <string name="search_recent">最近</string>
+    <string name="search_no_results">没有匹配的应用</string>
+    <string name="no_apps">没有可显示的应用</string>
     <string name="clear">清除</string>
     <string name="filter_system_apps">系统应用</string>
     <string name="filter_modified">已修改</string>
