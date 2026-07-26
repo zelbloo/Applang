@@ -1,6 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.com.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.com.google.dagger.hilt)
     alias(libs.plugins.com.mikepenz.aboutlibraries)
     alias(libs.plugins.compose.compiler)
@@ -9,12 +10,14 @@ plugins {
 
 android {
     namespace = "vegabobo.languageselector"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "vegabobo.languageselector"
         minSdk = 33
-        targetSdk = 35
+        // Compiled against the newest APIs, but runtime behaviour changes are opted
+        // into separately once they can be verified on a device.
+        targetSdk = 36
         versionCode = 5
         versionName = "1.04"
 
@@ -39,9 +42,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
     buildFeatures {
         buildConfig = true
         compose = true
@@ -54,8 +54,18 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
+}
+
 aboutLibraries {
-    excludeFields = arrayOf("generated")
+    export {
+        // "generated" only records the timestamp of the last export and would make
+        // every build produce a different resource, breaking build reproducibility.
+        excludeFields.add("generated")
+    }
 }
 
 dependencies {
@@ -87,8 +97,6 @@ dependencies {
 
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
-
-    implementation(libs.hiddenapibypass)
 
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
