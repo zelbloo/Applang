@@ -1,7 +1,6 @@
 package vegabobo.languageselector.ui.screen.appinfo
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
@@ -10,17 +9,18 @@ import android.net.Uri
 import android.os.LocaleList
 import android.provider.Settings
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import vegabobo.languageselector.LocaleManager
-import vegabobo.languageselector.service.UserServiceProvider
-import vegabobo.languageselector.ui.screen.main.getAppIcon
-import vegabobo.languageselector.ui.screen.main.getLabel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import vegabobo.languageselector.BuildConfig
+import vegabobo.languageselector.LocaleManager
+import vegabobo.languageselector.service.UserServiceProvider
+import vegabobo.languageselector.ui.screen.main.getAppIcon
+import vegabobo.languageselector.ui.screen.main.getLabel
 import java.util.Locale
 import javax.inject.Inject
 
@@ -32,7 +32,8 @@ object PrefConstants {
 @HiltViewModel
 class AppInfoVm @Inject constructor(
     val app: Application,
-    val localeManager: LocaleManager
+    private val localeManager: LocaleManager,
+    private val sharedPreferences: SharedPreferences,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppInfoState())
     val uiState: StateFlow<AppInfoState> = _uiState.asStateFlow()
@@ -46,29 +47,28 @@ class AppInfoVm @Inject constructor(
             it.copy(
                 appName = app.packageManager.getLabel(appInfo),
                 appPackage = appInfo.packageName,
-                appIcon = app.packageManager.getAppIcon(appInfo)
+                appIcon = app.packageManager.getAppIcon(appInfo),
+                listOfAllLanguages = localeManager.localeList
             )
         }
 
         UserServiceProvider.run {
-            _uiState.value.listOfSuggestedLanguages.clear()
-            for (locale in 0 until systemLocales.size()) {
-                val thisLocale = systemLocales[locale]
-                val thisLLI =
-                    SingleLocale(thisLocale.capDisplayName(), thisLocale.toLanguageTag())
-                _uiState.value.listOfSuggestedLanguages.add(thisLLI)
-                updateCurrentLanguageState()
+            val suggested = (0 until systemLocales.size()).map { index ->
+                val locale = systemLocales[index]
+                SingleLocale(locale.capDisplayName(), locale.toLanguageTag())
             }
+            _uiState.update { it.copy(listOfSuggestedLanguages = suggested) }
+            updateCurrentLanguageState()
         }
-
-        _uiState.update { it.copy(listOfAllLanguages = localeManager.localeList) }
     }
 
     fun updateCurrentLanguageState() {
         UserServiceProvider.run {
             val currentLocale = getApplicationLocales(appInfo.packageName)
-            if (!currentLocale.isEmpty)
-                _uiState.update { it.copy(currentLanguage = currentLocale.get(0).capDisplayName()) }
+            // Also clears the value when the override is removed; it used to keep showing the
+            // previous language until the screen was reopened.
+            val name = if (currentLocale.isEmpty) "" else currentLocale.get(0).capDisplayName()
+            _uiState.update { it.copy(currentLanguage = name) }
         }
     }
 
@@ -100,8 +100,8 @@ class AppInfoVm @Inject constructor(
 
     fun onClickOpen() {
         val launchIntent =
-            app.packageManager.getLaunchIntentForPackage(appInfo.packageName)
-        launchIntent?.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK) ?: return
+            app.packageManager.getLaunchIntentForPackage(appInfo.packageName) ?: return
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         app.startActivity(launchIntent)
     }
 
@@ -109,7 +109,6 @@ class AppInfoVm @Inject constructor(
         UserServiceProvider.run {
             setApplicationLocales(appInfo.packageName, LocaleList())
             updateCurrentLanguageState()
-            _uiState.update { it.copy(currentLanguage = "") }
         }
     }
 
@@ -119,53 +118,63 @@ class AppInfoVm @Inject constructor(
         }
     }
 
-    fun getSp(): SharedPreferences =
-        app.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE)
+    fun isPinned(singleLocale: SingleLocale): Boolean =
+        _uiState.value.listOfPinnedLanguages.any { it.languageTag == singleLocale.languageTag }
+
+    fun onTogglePin(singleLocale: SingleLocale) {
+        if (isPinned(singleLocale)) onRemovePin(singleLocale) else onPinLang(singleLocale)
+    }
 
     fun onPinLang(singleLocale: SingleLocale) {
-        val sp = getSp()
-        val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: emptySet()
-        val mset = set.toMutableSet()
-        mset.add("${singleLocale.name},${singleLocale.languageTag}")
-        sp.edit().putStringSet(PrefConstants.PINNED_LOCALES, mset).apply()
+        val stored = sharedPreferences.pinnedLocales()
+        sharedPreferences.edit {
+            putStringSet(
+                PrefConstants.PINNED_LOCALES,
+                stored + "${singleLocale.name},${singleLocale.languageTag}"
+            )
+        }
         updatePinnedLangsFromSP()
     }
 
     fun onRemovePin(singleLocale: SingleLocale) {
-        val sp = getSp()
-        val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: emptySet()
-        val newSet = mutableSetOf<String>()
-        set.forEach {
-            if (!it.contains(singleLocale.languageTag))
-                newSet.add(it)
+        val stored = sharedPreferences.pinnedLocales()
+        sharedPreferences.edit {
+            putStringSet(
+                PrefConstants.PINNED_LOCALES,
+                // Compare the tag exactly. This used to be a `contains(languageTag)` over the
+                // whole "name,tag" entry, so unpinning "en" also dropped "en-US", "en-GB" and
+                // every entry whose display name happened to contain the letters.
+                stored.filterNot { it.substringAfterLast(',') == singleLocale.languageTag }
+                    .toSet()
+            )
         }
-        sp.edit().putStringSet(PrefConstants.PINNED_LOCALES, newSet).apply()
         updatePinnedLangsFromSP()
     }
 
     fun updatePinnedLangsFromSP() {
-        val sp = getSp()
-        val set = sp.getStringSet(PrefConstants.PINNED_LOCALES, emptySet()) ?: return
-        val pinnedLocaleList = set.parseSetLangs()
+        val pinnedLocaleList = sharedPreferences.pinnedLocales().parseSetLangs()
         _uiState.update { it.copy(listOfPinnedLanguages = pinnedLocaleList) }
     }
 
+    private fun SharedPreferences.pinnedLocales(): Set<String> =
+        getStringSet(PrefConstants.PINNED_LOCALES, emptySet()).orEmpty()
 }
 
 fun Locale.capDisplayName(): String {
     return this.getDisplayName(this).replaceFirstChar { it.uppercaseChar() }
 }
 
-fun Set<String>.parseSetLangs(): MutableList<SingleLocale> {
-    return this.mapNotNull {
-        try {
-            val stringLocale = it.split(",")
-            val name = stringLocale[0]
-            val tag = stringLocale[1]
-            SingleLocale(name, tag)
-        } catch (e: Exception) {
-            Log.e(BuildConfig.APPLICATION_ID, e.stackTraceToString())
-            null
+/**
+ * Pinned locales are stored as "display name,languageTag". Split on the last comma: language
+ * tags never contain one, but display names sometimes do.
+ */
+fun Set<String>.parseSetLangs(): List<SingleLocale> {
+    return this.mapNotNull { entry ->
+        val tag = entry.substringAfterLast(',', missingDelimiterValue = "")
+        if (tag.isEmpty()) {
+            Log.e(BuildConfig.APPLICATION_ID, "Malformed pinned locale entry: $entry")
+            return@mapNotNull null
         }
-    }.toMutableList()
+        SingleLocale(entry.substringBeforeLast(','), tag)
+    }.sortedBy { it.name }
 }

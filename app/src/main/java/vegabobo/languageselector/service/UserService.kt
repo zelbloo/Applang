@@ -1,6 +1,5 @@
 package vegabobo.languageselector.service
 
-import android.app.ActivityManager
 import android.app.IActivityManager
 import android.app.IActivityTaskManager
 import android.app.ILocaleManager
@@ -37,7 +36,7 @@ class UserService : IUserService.Stub() {
 
     override fun setApplicationLocales(packageName: String?, locales: LocaleList?) {
         requiresLocaleManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        val currentUser = getCurrentUser()
         if (Build.VERSION.SDK_INT == 33 && Build.VERSION.RELEASE_OR_CODENAME != "UpsideDownCake") {
             LOCALE_MANAGER!!.setApplicationLocales(packageName, currentUser, locales)
             return
@@ -47,7 +46,7 @@ class UserService : IUserService.Stub() {
 
     override fun getApplicationLocales(packageName: String?): LocaleList {
         requiresLocaleManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        val currentUser = getCurrentUser()
         return LOCALE_MANAGER!!.getApplicationLocales(packageName, currentUser)
     }
 
@@ -63,9 +62,14 @@ class UserService : IUserService.Stub() {
         ACTIVITY_MANAGER = IActivityManager.Stub.asInterface(am)
     }
 
-    override fun forceStopPackage(packageName: String?) {
+    /** Id of the user currently in the foreground, which owns the apps shown by the UI. */
+    private fun getCurrentUser(): Int {
         requiresActivityManager()
-        val currentUser = ActivityManager.getCurrentUser()
+        return ACTIVITY_MANAGER!!.currentUserId
+    }
+
+    override fun forceStopPackage(packageName: String?) {
+        val currentUser = getCurrentUser()
         ACTIVITY_MANAGER!!.forceStopPackage(packageName, currentUser)
     }
 

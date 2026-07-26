@@ -7,28 +7,23 @@ import java.util.Locale
 
 class LocaleManager {
 
-    val localeList = ArrayList<LocaleRegion>()
+    val localeList: List<LocaleRegion>
 
     init {
-        val locales = Locale.getAvailableLocales()
-        val localeListMap = mutableMapOf<String, LocaleRegion>()
-        for (locale in locales) {
-            val languageName = locale.capDisplayName()
-            val languageTag = locale.toLanguageTag()
-            val language = locale.getDisplayLanguage(locale).replaceFirstChar { it.uppercaseChar() }
+        val byLanguage = linkedMapOf<String, LocaleRegion>()
+        for (locale in Locale.getAvailableLocales()) {
+            val language = locale.getDisplayLanguage(locale)
+                .replaceFirstChar { it.uppercaseChar() }
+            if (language.isEmpty()) continue
 
-            val existingLocale = localeListMap[language]
-            if (existingLocale != null) {
-                val singleLocale = SingleLocale(languageName, languageTag)
-                existingLocale.locales.add(singleLocale)
-                continue
-            }
-
-            localeListMap[language] =
-                LocaleRegion(language, arrayListOf())
+            // getOrPut, because the previous version created the region with an empty list and
+            // only started appending from the *second* locale of each language: every language
+            // was silently missing one of its regional variants.
+            val region = byLanguage.getOrPut(language) { LocaleRegion(language, mutableListOf()) }
+            region.locales.add(SingleLocale(locale.capDisplayName(), locale.toLanguageTag()))
         }
-        localeList.addAll(localeListMap.values)
-        localeList.sortBy { it.language }
-    }
 
+        byLanguage.values.forEach { region -> region.locales.sortBy { it.name } }
+        localeList = byLanguage.values.sortedBy { it.language }
+    }
 }

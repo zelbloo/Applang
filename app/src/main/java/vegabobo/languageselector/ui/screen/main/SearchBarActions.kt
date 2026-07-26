@@ -1,7 +1,6 @@
 package vegabobo.languageselector.ui.screen.main
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
@@ -18,23 +17,23 @@ import vegabobo.languageselector.R
 
 @Composable
 fun SearchBarActions(
-    isDropdownVisible: Boolean = false,
-    isShowingSystemApps: Boolean = false,
-    onClickToggleDropdown: () -> Unit,
+    isDropdownVisible: Boolean,
+    isShowingSystemApps: Boolean,
     onToggleDropdown: () -> Unit,
     onClickToggleSystemApps: () -> Unit,
     onClickAbout: () -> Unit
 ) {
-    Box(
-        modifier = Modifier.wrapContentSize(Alignment.Center)
-    ) {
-        ToolbarNormal(
-            onToggleDropdown = { onToggleDropdown() }
-        )
+    Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
+        IconButton(onClick = onToggleDropdown) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = stringResource(R.string.more_options)
+            )
+        }
 
         DropdownMenu(
             expanded = isDropdownVisible,
-            onDismissRequest = { onClickToggleDropdown() }
+            onDismissRequest = onToggleDropdown
         ) {
             DropdownMenuItem(
                 text = {
@@ -45,25 +44,11 @@ fun SearchBarActions(
                             stringResource(R.string.show_system_apps)
                     )
                 },
-                onClick = { onClickToggleSystemApps() }
+                onClick = onClickToggleSystemApps
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.about)) },
-                onClick = { onClickAbout(); onClickToggleDropdown() }
-            )
-        }
-    }
-}
-
-@Composable
-fun ToolbarNormal(
-    onToggleDropdown: () -> Unit,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = { onToggleDropdown() }) {
-            Icon(
-                imageVector = Icons.Outlined.MoreVert,
-                contentDescription = "More icon"
+                onClick = { onToggleDropdown(); onClickAbout() }
             )
         }
     }

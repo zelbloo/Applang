@@ -1,31 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Language Selector</string>
-    <string name="app_language">アプリの言語</string>
-    <string name="system_default">システムのデフォルト</string>
-    <string name="user_languages">ユーザー言語:</string>
-    <string name="pinned">ピン留め:</string>
-    <string name="region">地域:</string>
-    <string name="all_languages">すべての言語:</string>
+
+    <!-- App list -->
+    <string name="search">アプリを検索</string>
+    <string name="search_empty_hint">入力してアプリを検索</string>
+    <string name="search_recent">最近</string>
+    <string name="search_no_results">一致するアプリはありません</string>
+    <string name="no_apps">表示できるアプリがありません</string>
+    <string name="clear">消去</string>
+    <string name="filter_system_apps">システムアプリ</string>
+    <string name="filter_modified">変更済み</string>
+    <string name="label_system_app">システムアプリ</string>
+    <string name="label_user_app">ユーザーアプリ</string>
+    <string name="label_modified">変更済み</string>
+    <string name="moved_to_top">変更済みのアプリをリストの先頭に移動しました</string>
+    <string name="moved_to_bottom">未変更のアプリをリストの末尾に移動しました</string>
+    <string name="action_show">表示</string>
+    <string name="more_options">その他のオプション</string>
     <string name="show_only_user_apps">ユーザーアプリのみを表示</string>
     <string name="show_system_apps">システムアプリを表示</string>
+
+    <!-- App language screen -->
+    <string name="app_language">アプリの言語</string>
+    <string name="back">戻る</string>
     <string name="settings">設定</string>
     <string name="open">開く</string>
     <string name="close">閉じる</string>
+    <string name="system_default">システムのデフォルト</string>
+    <string name="user_languages">ユーザー言語</string>
+    <string name="pinned">ピン留め</string>
+    <string name="region">地域</string>
+    <string name="all_languages">すべての言語</string>
+    <string name="pin">ピン留め</string>
+    <string name="unpin">ピン留めを解除</string>
+    <string name="current_language">現在の言語</string>
+
+    <!-- Dialogs -->
     <string name="permissions_required">必要な許可</string>
     <string name="shizuku_required">このアプリにはShizukuが必要です。Shizukuをインストールしてから起動し、Shizukuにこのアプリへのアクセス許可を与えた後、次に進んでください。</string>
     <string name="proceed">続行</string>
-    <string name="pinned_ok">%1$s をピン留めしました</string>
-    <string name="unpinned">%1$s のピン留めを解除しました</string>
-    <string name="about">About</string>
-    <string name="deps_libs">依存関係およびライブラリ:</string>
-    <string name="version">Version %1$s (%2$s)</string>
+
+    <!-- About -->
+    <string name="about">アプリについて</string>
     <string name="app">アプリケーション</string>
+    <string name="deps_libs">依存関係およびライブラリ</string>
+    <string name="version">バージョン %1$s (%2$s)</string>
     <string name="ghrepo">GitHub リポジトリ</string>
     <string name="view_source">ソースコードを表示</string>
-    <string name="loading">読み込み中…</string>
+
+    <!-- Quick settings tile -->
     <string name="unavailable">利用できません</string>
-    <string name="warning">警告</string>
-    <string name="warning_system_apps">システムアプリから言語を選択することは推奨されていません。続行しますか？</string>
-    <string name="cancel">キャンセル</string>
 </resources>

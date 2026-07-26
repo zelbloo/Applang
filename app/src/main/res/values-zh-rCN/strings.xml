@@ -1,30 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_language">App语言</string>
-    <string name="system_default">系统默认</string>
-    <string name="user_languages">用户语言</string>
-    <string name="pinned">置顶:</string>
-    <string name="region">地区:</string>
-    <string name="all_languages">全部语言:</string>
+
+    <!-- App list -->
+    <string name="search">搜索应用</string>
+    <string name="search_empty_hint">输入以搜索应用</string>
+    <string name="search_recent">最近</string>
+    <string name="search_no_results">没有匹配的应用</string>
+    <string name="no_apps">没有可显示的应用</string>
+    <string name="clear">清除</string>
+    <string name="filter_system_apps">系统应用</string>
+    <string name="filter_modified">已修改</string>
+    <string name="label_system_app">系统应用</string>
+    <string name="label_user_app">用户应用</string>
+    <string name="label_modified">已修改</string>
+    <string name="moved_to_top">已修改的应用已移至列表顶部</string>
+    <string name="moved_to_bottom">未修改的应用已移至列表底部</string>
+    <string name="action_show">查看</string>
+    <string name="more_options">更多选项</string>
     <string name="show_only_user_apps">只显示用户应用</string>
     <string name="show_system_apps">显示系统应用</string>
+
+    <!-- App language screen -->
+    <string name="app_language">应用语言</string>
+    <string name="back">返回</string>
     <string name="settings">设置</string>
     <string name="open">打开</string>
     <string name="close">关闭</string>
+    <string name="system_default">系统默认</string>
+    <string name="user_languages">用户语言</string>
+    <string name="pinned">置顶</string>
+    <string name="region">地区</string>
+    <string name="all_languages">全部语言</string>
+    <string name="pin">置顶</string>
+    <string name="unpin">取消置顶</string>
+    <string name="current_language">当前语言</string>
+
+    <!-- Dialogs -->
     <string name="permissions_required">需要权限</string>
-    <string name="shizuku_required">该应用需要 Shizuku,请安装并启动 Shizuku,获得 Shizuku 权限后,你可以继续</string>
+    <string name="shizuku_required">该应用需要 Shizuku，请安装并启动 Shizuku，在授予 Shizuku 权限后即可继续。</string>
     <string name="proceed">继续</string>
-    <string name="pinned_ok">%1$s 已置顶</string>
-    <string name="unpinned">%1$s 取消置顶</string>
+
+    <!-- About -->
     <string name="about">关于</string>
-    <string name="deps_libs">依赖库信息:</string>
-    <string name="version">版本 %1$s (%2$s)</string>
     <string name="app">应用</string>
-    <string name="ghrepo">Github 仓库</string>
-    <string name="view_source">查看源码</string>
-    <string name="loading">加载中...</string>
+    <string name="deps_libs">依赖与库</string>
+    <string name="version">版本 %1$s (%2$s)</string>
+    <string name="ghrepo">GitHub 仓库</string>
+    <string name="view_source">查看源代码</string>
+
+    <!-- Quick settings tile -->
     <string name="unavailable">不可用</string>
-    <string name="warning">警告</string>
-    <string name="warning_system_apps">不建议对系统应用选择语言,你确定?</string>
-    <string name="cancel">取消</string>
 </resources>

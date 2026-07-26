@@ -13,23 +13,26 @@ import androidx.compose.ui.Modifier
 @Composable
 fun FilterLabel(
     title: String,
-    onClick: (Boolean) -> Unit,
-    isSelected: Boolean
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     FilterChip(
-        onClick = { onClick(isSelected) },
+        modifier = modifier,
+        onClick = onClick,
         label = { Text(title) },
         selected = isSelected,
         leadingIcon = if (isSelected) {
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
-                    contentDescription = "Done icon",
+                    // Decorative: the chip already reports its selected state.
+                    contentDescription = null,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }
         } else {
             null
-        },
+        }
     )
 }

@@ -7,12 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.navigationBars
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
+import androidx.activity.enableEdgeToEdge
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,7 +17,7 @@ import vegabobo.languageselector.service.UserService
 import vegabobo.languageselector.service.UserServiceProvider
 import vegabobo.languageselector.ui.screen.Navigation
 import vegabobo.languageselector.ui.screen.main.OperationMode
-import vegabobo.languageselector.ui.theme.LanguageSelector
+import vegabobo.languageselector.ui.theme.LanguageSelectorTheme
 
 object ShizukuArgs {
     val userServiceArgs =
@@ -70,10 +65,12 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Drives the system bar icon colours from the theme, so they stay legible when the
+        // system switches between light and dark mode.
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            LanguageSelector { Navigation() }
+            LanguageSelectorTheme { Navigation() }
         }
 
         if (Shizuku.pingBinder() && savedInstanceState == null) {

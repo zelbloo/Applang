@@ -1,31 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Language Selector</string>
-    <string name="app_language">Idioma do app</string>
-    <string name="system_default">Padrão do sistema</string>
-    <string name="user_languages">Idiomas do usuário:</string>
-    <string name="pinned">Fixado:</string>
-    <string name="region">Região:</string>
-    <string name="all_languages">Todos os idiomas:</string>
+
+    <!-- App list -->
+    <string name="search">Pesquisar apps</string>
+    <string name="search_empty_hint">Digite para pesquisar seus apps</string>
+    <string name="search_recent">Recentes</string>
+    <string name="search_no_results">Nenhum app corresponde à pesquisa</string>
+    <string name="no_apps">Nenhum app para mostrar</string>
+    <string name="clear">Limpar</string>
+    <string name="filter_system_apps">Apps do sistema</string>
+    <string name="filter_modified">Modificados</string>
+    <string name="label_system_app">App do sistema</string>
+    <string name="label_user_app">App do usuário</string>
+    <string name="label_modified">Modificado</string>
+    <string name="moved_to_top">App modificado movido para o topo</string>
+    <string name="moved_to_bottom">App não modificado movido para o fim</string>
+    <string name="action_show">Mostrar</string>
+    <string name="more_options">Mais opções</string>
     <string name="show_only_user_apps">Mostrar apenas apps do usuário</string>
     <string name="show_system_apps">Mostrar apps do sistema</string>
+
+    <!-- App language screen -->
+    <string name="app_language">Idioma do app</string>
+    <string name="back">Voltar</string>
     <string name="settings">Config.</string>
     <string name="open">Abrir</string>
     <string name="close">Fechar</string>
+    <string name="system_default">Padrão do sistema</string>
+    <string name="user_languages">Idiomas do usuário</string>
+    <string name="pinned">Fixado</string>
+    <string name="region">Região</string>
+    <string name="all_languages">Todos os idiomas</string>
+    <string name="pin">Fixar</string>
+    <string name="unpin">Desafixar</string>
+    <string name="current_language">Idioma atual</string>
+
+    <!-- Dialogs -->
     <string name="permissions_required">Permissões necessárias</string>
     <string name="shizuku_required">É necessário o Shizuku, por favor instale e inicie o Shizuku, depois que as permissões do Shizuku forem concecidas ao app, será possível continuar.</string>
     <string name="proceed">Continuar</string>
-    <string name="pinned_ok">%1$s fixado</string>
-    <string name="unpinned">%1$s desafixado</string>
+
+    <!-- About -->
     <string name="about">Sobre</string>
+    <string name="app">Aplicativo</string>
     <string name="deps_libs">Dependências e bibliotecas</string>
     <string name="version">versão %1$s (%2$s)</string>
-    <string name="app">Aplicativo</string>
     <string name="ghrepo">GitHub repo.</string>
     <string name="view_source">Ver código fonte</string>
-    <string name="loading">Carregando…</string>
+
+    <!-- Quick settings tile -->
     <string name="unavailable">Indisponível</string>
-    <string name="warning">Aviso</string>
-    <string name="warning_system_apps">Selecionar idiomas de aplicativos do sistema não é recomendado, você tem certeza?</string>
-    <string name="cancel">Cancelar</string>
 </resources>

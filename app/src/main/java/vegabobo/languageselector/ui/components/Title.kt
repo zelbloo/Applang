@@ -5,20 +5,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
+/** Section header for a group of list items. */
 @Composable
 fun Title(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.secondary,
-        modifier = modifier
-            .padding(start = 18.dp)
-            .padding(bottom = 8.dp)
-            .padding(top = 8.dp)
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
     )
 }
