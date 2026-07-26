@@ -40,7 +40,9 @@ jobs:
       - name: Set up the Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platforms;android-37 build-tools;36.0.0 platform-tools'
+          # See build.yml: AGP downloads the platform and build-tools it needs; this step
+          # is here to accept the SDK licenses.
+          packages: 'platform-tools'
 
       - name: Check the tag against versionName
         if: startsWith(github.ref, 'refs/tags/v')

@@ -47,9 +47,11 @@ jobs:
       - name: Set up the Android SDK
         uses: android-actions/setup-android@v3
         with:
-          # Pinned so a runner image update cannot silently change what we build against.
-          # Anything else AGP needs it downloads itself; this step accepts the licenses.
-          packages: 'platforms;android-37 build-tools;36.0.0 platform-tools'
+          # Only what the action itself needs. The platform and build-tools are not pinned
+          # here: AGP derives them from compileSdk and downloads them, and it wants the
+          # minor-versioned package (platforms;android-37.0), which is easy to get wrong.
+          # This step's real job is accepting the SDK licenses so that download can happen.
+          packages: 'platform-tools'
 
       - name: Assemble
         run: ./gradlew assembleDebug assembleRelease --stacktrace
