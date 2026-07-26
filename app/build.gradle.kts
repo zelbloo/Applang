@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "vegabobo.languageselector"
+    namespace = "app.applang.zel"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "vegabobo.languageselector"
+        applicationId = "app.applang.zel"
         minSdk = 33
         // Compiled against the newest APIs, but runtime behaviour changes are opted
         // into separately once they can be verified on a device.

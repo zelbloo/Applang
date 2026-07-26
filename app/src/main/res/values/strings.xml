@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Language Selector</string>
+    <string name="app_name" translatable="false">Applang</string>
 
     <!-- App list -->
     <string name="search">Search apps</string>

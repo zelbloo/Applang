@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "vegabobo.languageselector.hiddenapi"
+    namespace = "app.applang.zel.hiddenapi"
     compileSdk = 37
 
     defaultConfig {
