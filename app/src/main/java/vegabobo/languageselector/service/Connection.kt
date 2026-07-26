@@ -16,9 +16,11 @@ class Connection : ServiceConnection {
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         set(IUserService.Stub.asInterface(service))
+        UserServiceProvider.onConnectionChanged()
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
         SERVICE = null
+        UserServiceProvider.onConnectionChanged()
     }
 }

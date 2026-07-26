@@ -19,6 +19,7 @@ data class MainScreenState(
     val operationMode: OperationMode = OperationMode.NONE,
     val isDropdownVisible: Boolean = false,
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val isShowSystemAppsHome: Boolean = false,
     val snackBarDisplay: SnackBarDisplay = SnackBarDisplay.NONE,
 )

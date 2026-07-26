@@ -1,5 +1,6 @@
 package vegabobo.languageselector.ui.screen.main
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,9 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopSearchBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import vegabobo.languageselector.MainActivity
 import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.components.AppListItem
 import vegabobo.languageselector.ui.components.FilterLabel
@@ -67,6 +72,7 @@ fun MainScreen(
 
     val searchBarState = rememberSearchBarState()
     val textFieldState = rememberTextFieldState()
+    val pullToRefreshState = rememberPullToRefreshState()
     val searchBarScrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var showSystemAppsInSearch by rememberSaveable { mutableStateOf(false) }
     var onlyModifiedInSearch by rememberSaveable { mutableStateOf(false) }
@@ -160,32 +166,55 @@ fun MainScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        when {
-            uiState.isLoading ->
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { mainScreenVm.onRefresh() },
+                state = pullToRefreshState,
+                modifier = Modifier.fillMaxSize(),
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = pullToRefreshState,
+                        isRefreshing = uiState.isRefreshing,
+                        // Below the search bar instead of behind it.
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = innerPadding.calculateTopPadding())
+                    )
                 }
-
-            homeApps.isEmpty() ->
-                CenteredMessage(
-                    text = stringResource(R.string.no_apps),
-                    modifier = Modifier.padding(innerPadding)
-                )
-
-            else ->
+            ) {
                 LazyColumn(
                     state = lazyListState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = innerPadding
                 ) {
-                    items(
-                        count = homeApps.size,
-                        key = { homeApps[it].pkg }
-                    ) { index ->
-                        val app = homeApps[index]
-                        AppListItem(app = app, onClickApp = { openApp(app) })
+                    if (homeApps.isEmpty()) {
+                        // A full-height item keeps the list scrollable, which is what makes the
+                        // empty state pullable: this is exactly the state you are in before
+                        // access has been granted.
+                        item {
+                            Box(
+                                modifier = Modifier.fillParentMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CenteredMessage(stringResource(R.string.no_apps))
+                            }
+                        }
+                    } else {
+                        items(
+                            count = homeApps.size,
+                            key = { homeApps[it].pkg }
+                        ) { index ->
+                            val app = homeApps[index]
+                            AppListItem(app = app, onClickApp = { openApp(app) })
+                        }
                     }
                 }
+            }
         }
     }
 
@@ -206,8 +235,15 @@ fun MainScreen(
         )
     }
 
-    if (uiState.operationMode == OperationMode.NONE && !uiState.isLoading)
-        ShizukuRequiredWarning { mainScreenVm.onClickProceedShizuku() }
+    if (uiState.operationMode == OperationMode.NONE && !uiState.isLoading) {
+        val activity = LocalActivity.current
+        ShizukuRequiredWarning {
+            // Ask Shizuku for permission, in case it was started after this app was opened;
+            // re-detecting on its own would find nothing to detect.
+            (activity as? MainActivity)?.requestShizukuAccess()
+            mainScreenVm.onClickProceedShizuku()
+        }
+    }
 }
 
 @Composable
