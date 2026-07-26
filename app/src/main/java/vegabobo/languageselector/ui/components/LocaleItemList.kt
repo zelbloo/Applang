@@ -1,39 +1,28 @@
 package vegabobo.languageselector.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LocaleItemList(
     itemText: String,
+    modifier: Modifier = Modifier,
     onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .combinedClickable(
-                onClick = { onClick() },
-                onLongClick = { onLongClick() }
-            )
-            .fillMaxWidth()
-            .height(72.dp)
-            .padding(18.dp)
-    ) {
-        Text(
-            modifier = Modifier.align(Alignment.CenterStart),
-            text = itemText,
-            fontSize = 19.sp
-        )
-    }
+    // ListItem sizes itself around its content instead of the fixed 72dp height this used to
+    // have, so long locale names and large font scales no longer get clipped.
+    ListItem(
+        modifier = modifier.combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick
+        ),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        headlineContent = { Text(itemText) }
+    )
 }

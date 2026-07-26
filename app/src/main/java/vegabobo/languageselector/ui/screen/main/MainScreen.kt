@@ -136,12 +136,6 @@ fun MainScreen(
                         if (!uiState.isShowSystemAppsHome && thisApp.isSystemApp() && !thisApp.isModified())
                             return@items
                         AppListItem(
-                            modifier = Modifier.padding(
-                                start = 26.dp,
-                                end = 26.dp,
-                                top = 4.dp,
-                                bottom = 4.dp
-                            ),
                             app = thisApp,
                             onClickApp = {
                                 mainScreenVm.onClickApp(thisApp)

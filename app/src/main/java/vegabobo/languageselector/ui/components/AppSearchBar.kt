@@ -111,12 +111,6 @@ fun AppSearchBar(
                     if (filter(query, app, selectedLabels))
                         return@items
                     AppListItem(
-                        modifier = Modifier.padding(
-                            start = 23.dp,
-                            end = 23.dp,
-                            top = 4.dp,
-                            bottom = 4.dp
-                        ),
                         app = app,
                         onClickApp = { onClickApp(app) }
                     )
@@ -154,12 +148,6 @@ fun AppSearchBar(
                 items(history.size) {
                     val app = history[it]
                     AppListItem(
-                        modifier = Modifier.padding(
-                            start = 23.dp,
-                            end = 23.dp,
-                            top = 4.dp,
-                            bottom = 4.dp
-                        ),
                         app = app,
                         onClickApp = { onClickApp(app) }
                     )
