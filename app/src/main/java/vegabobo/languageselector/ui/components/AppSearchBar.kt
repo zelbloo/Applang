@@ -23,12 +23,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.screen.main.AppInfo
 import vegabobo.languageselector.ui.screen.main.AppLabels
 
@@ -89,7 +91,7 @@ fun AppSearchBar(
                             .horizontalScroll(rememberScrollState())
                     ) {
                         FilterLabel(
-                            title = "Show System",
+                            title = stringResource(R.string.filter_system_apps),
                             onClick = {
                                 onSelectedLabelsChange(AppLabels.SYSTEM_APP)
                             },
@@ -97,7 +99,7 @@ fun AppSearchBar(
                         )
                         Spacer(Modifier.padding(8.dp))
                         FilterLabel(
-                            title = "Show Modified",
+                            title = stringResource(R.string.filter_modified),
                             onClick = { onSelectedLabelsChange(AppLabels.MODIFIED) },
                             isSelected = selectedLabels.contains(AppLabels.MODIFIED)
                         )
@@ -127,7 +129,7 @@ fun AppSearchBar(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "History".uppercase(),
+                            text = stringResource(R.string.search_recent).uppercase(),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             letterSpacing = 1.sp,
@@ -143,7 +145,7 @@ fun AppSearchBar(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                Text(text = "Clear")
+                                Text(text = stringResource(R.string.clear))
                             }
                         }
                         Spacer(modifier = Modifier.padding(6.dp))
@@ -175,7 +177,7 @@ fun AppSearchBar(
                             .fillMaxWidth()
                             .padding(10.dp)
                             .alpha(0.4f),
-                        text = "Type something to search",
+                        text = stringResource(R.string.search_empty_hint),
                         textAlign = TextAlign.Center
                     )
                 }

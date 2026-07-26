@@ -22,7 +22,8 @@ fun ShizukuRequiredWarning(
         icon = {
             Icon(
                 imageVector = Icons.Outlined.WarningAmber,
-                contentDescription = "Warning icon"
+                // Decorative: the dialog title already says this is a warning.
+                contentDescription = null
             )
         },
         title = { Text(stringResource(id = R.string.permissions_required)) },

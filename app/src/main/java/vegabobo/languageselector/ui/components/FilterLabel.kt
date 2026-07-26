@@ -24,7 +24,8 @@ fun FilterLabel(
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
-                    contentDescription = "Done icon",
+                    // Decorative: the chip already reports its selected state.
+                    contentDescription = null,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }

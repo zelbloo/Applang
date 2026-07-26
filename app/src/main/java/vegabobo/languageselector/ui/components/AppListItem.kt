@@ -18,10 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.screen.main.AppInfo
 
 @Composable
@@ -39,7 +41,8 @@ fun AppListItem(
         Image(
             modifier = Modifier.size(32.dp),
             bitmap = app.icon.toBitmap().asImageBitmap(),
-            contentDescription = "app icon"
+            // Decorative: the app name is right next to it.
+            contentDescription = null
         )
         Spacer(modifier = Modifier.padding(8.dp))
         Column(
@@ -49,9 +52,14 @@ fun AppListItem(
             Text(text = app.name, fontSize = 18.sp, fontWeight = FontWeight.Medium, maxLines = 1)
             Text(text = app.pkg, fontSize = 12.sp, maxLines = 1)
             Row {
-                TextLabel(text = if (app.isSystemApp()) "System App" else "User App")
+                TextLabel(
+                    text = stringResource(
+                        if (app.isSystemApp()) R.string.label_system_app
+                        else R.string.label_user_app
+                    )
+                )
                 if (app.isModified())
-                    TextLabel(text = "Modified")
+                    TextLabel(text = stringResource(R.string.label_modified))
             }
         }
     }
