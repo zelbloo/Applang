@@ -39,9 +39,12 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
         Shell.setDefaultBuilder(Shell.Builder.create().setTimeout(10))
     }
 
-    val acRequestCode = 1
+    private val shizukuRequestCode = 1
 
-    fun bindShizuku() {
+    /** Kept so a dialog the user declined is not thrown at them again on every resume. */
+    private var hasRequestedShizukuPermission = false
+
+    private fun bindShizuku() {
         Shizuku.bindUserService(ShizukuArgs.userServiceArgs, UserServiceProvider.connection)
     }
 
@@ -52,30 +55,45 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
             bindShizuku()
     }
 
-    private fun checkPermission(code: Int): Boolean {
-        return if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+    /**
+     * Shizuku is a separate app that may not have been running when this activity was created,
+     * so this runs on every resume rather than once in onCreate. It used to run only in
+     * onCreate and only when the binder was already alive, which meant that starting Shizuku
+     * after opening this app left it with no way to ever ask for permission.
+     *
+     * @param userInitiated the user asked for this from the permission dialog, so ask again
+     *   even if we already have.
+     */
+    private fun connectShizukuIfPossible(userInitiated: Boolean = false) {
+        if (!Shizuku.pingBinder() || UserServiceProvider.isConnected()) return
+
+        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
             bindShizuku()
-            true
-        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-            false
-        } else {
-            Shizuku.requestPermission(code)
-            false
+            return
+        }
+
+        if (userInitiated || !hasRequestedShizukuPermission) {
+            hasRequestedShizukuPermission = true
+            Shizuku.requestPermission(shizukuRequestCode)
         }
     }
+
+    /** Called from the "permissions required" dialog. */
+    fun requestShizukuAccess() = connectShizukuIfPossible(userInitiated = true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Drives the system bar icon colours from the theme, so they stay legible when the
         // system switches between light and dark mode.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // On a configuration change the request was already made by the previous instance.
+        hasRequestedShizukuPermission = savedInstanceState != null
+
+        Shizuku.addRequestPermissionResultListener(REQUEST_PERMISSION_RESULT_LISTENER)
+
         setContent {
             LanguageSelectorTheme { Navigation() }
-        }
-
-        if (Shizuku.pingBinder() && savedInstanceState == null) {
-            Shizuku.addRequestPermissionResultListener(REQUEST_PERMISSION_RESULT_LISTENER)
-            checkPermission(acRequestCode)
         }
 
         RootReceivedListener.setListener(object : IRootListener {
@@ -88,13 +106,7 @@ class MainActivity : ComponentActivity(), Shizuku.OnRequestPermissionResultListe
 
     override fun onResume() {
         super.onResume()
-        if (
-            Shizuku.pingBinder() &&
-            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED &&
-            !UserServiceProvider.isConnected()
-        ) {
-            bindShizuku()
-        }
+        connectShizukuIfPossible()
     }
 
     override fun onDestroy() {

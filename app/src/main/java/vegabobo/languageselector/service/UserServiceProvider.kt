@@ -4,6 +4,9 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import vegabobo.languageselector.IUserService
 import vegabobo.languageselector.ui.screen.main.OperationMode
@@ -14,6 +17,22 @@ object UserServiceProvider {
 
     var connection = Connection()
     var opMode = OperationMode.NONE
+
+    private val _isServiceConnected = MutableStateFlow(false)
+
+    /**
+     * Whether the privileged service is currently bound.
+     *
+     * Permission is granted outside the app — Shizuku shows its own dialog, root is granted by
+     * the superuser manager — so nothing calls back into the UI when it happens. Screens
+     * observe this instead of waiting for the user to restart the app.
+     */
+    val isServiceConnected: StateFlow<Boolean> = _isServiceConnected.asStateFlow()
+
+    /** Called by [Connection] whenever the binder is handed over or lost. */
+    fun onConnectionChanged() {
+        _isServiceConnected.value = isConnected()
+    }
 
     // Blocking
     fun getService(): IUserService {

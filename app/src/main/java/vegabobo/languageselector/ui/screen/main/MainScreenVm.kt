@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
@@ -55,6 +57,27 @@ class MainScreenVm @Inject constructor(
 
     init {
         fillListOfApps()
+        reloadWhenServiceConnects()
+    }
+
+    /**
+     * Permission is granted outside this screen, so nothing tells us when it happens. Watch the
+     * service instead: as soon as it binds, load the list the first attempt had to give up on.
+     *
+     * The current value is dropped because it needs no handling — if the service was already
+     * connected when this view model was created, the load started in [init] succeeds on its own.
+     */
+    private fun reloadWhenServiceConnects() {
+        viewModelScope.launch {
+            UserServiceProvider.isServiceConnected
+                .drop(1)
+                .filter { isConnected -> isConnected }
+                .collect {
+                    if (_uiState.value.operationMode != OperationMode.NONE) return@collect
+                    _uiState.update { it.copy(isLoading = true) }
+                    fillListOfApps()
+                }
+        }
     }
 
     fun parseAppInfo(a: ApplicationInfo): AppInfo {
@@ -83,7 +106,10 @@ class MainScreenVm @Inject constructor(
                 // Nothing can be read without Shizuku or root. Stop here so the UI leaves the
                 // loading state and shows the permission dialog; parseAppInfo() would otherwise
                 // block for 20s waiting for a service that will never connect, and then throw.
-                _uiState.update { it.copy(listOfApps = emptyList(), isLoading = false) }
+                // reloadWhenServiceConnects() picks things up once access is granted.
+                _uiState.update {
+                    it.copy(listOfApps = emptyList(), isLoading = false, isRefreshing = false)
+                }
                 return@launch
             }
 
@@ -93,8 +119,19 @@ class MainScreenVm @Inject constructor(
                 Log.e(BuildConfig.APPLICATION_ID, "Could not read the installed apps", it)
                 emptyList()
             }
-            _uiState.update { it.copy(listOfApps = sortedList, isLoading = false) }
+            _uiState.update {
+                it.copy(listOfApps = sortedList, isLoading = false, isRefreshing = false)
+            }
         }
+    }
+
+    /**
+     * Pull to refresh. Re-detects the operation mode when there is none, so this doubles as the
+     * manual retry when the automatic reload did not catch the permission being granted.
+     */
+    fun onRefresh() {
+        _uiState.update { it.copy(isRefreshing = true) }
+        fillListOfApps()
     }
 
     /** Modified apps first, alphabetically within each group. */

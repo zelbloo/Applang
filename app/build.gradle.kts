@@ -27,9 +27,22 @@ android {
         }
     }
 
+    // Set by CI from repository secrets. Without them the release build keeps falling back to
+    // the debug key, so local builds behave exactly as before.
+    val releaseKeystore = System.getenv("KEYSTORE_FILE")?.takeIf { it.isNotBlank() }?.let(::file)
+    if (releaseKeystore != null) {
+        signingConfigs.create("release") {
+            storeFile = releaseKeystore
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
