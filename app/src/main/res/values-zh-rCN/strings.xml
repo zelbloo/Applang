@@ -39,9 +39,6 @@
     <string name="permissions_required">需要权限</string>
     <string name="shizuku_required">该应用需要 Shizuku，请安装并启动 Shizuku，在授予 Shizuku 权限后即可继续。</string>
     <string name="proceed">继续</string>
-    <string name="warning">警告</string>
-    <string name="warning_system_apps">不建议为系统应用设置语言，确定要继续吗？</string>
-    <string name="cancel">取消</string>
 
     <!-- About -->
     <string name="about">关于</string>
@@ -52,6 +49,5 @@
     <string name="view_source">查看源代码</string>
 
     <!-- Quick settings tile -->
-    <string name="loading">加载中…</string>
     <string name="unavailable">不可用</string>
 </resources>

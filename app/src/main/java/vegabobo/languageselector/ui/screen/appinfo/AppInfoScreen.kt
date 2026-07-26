@@ -27,7 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -181,10 +181,10 @@ private fun LocaleRow(
 
 @Composable
 private fun AppHeader(uiState: AppInfoState) {
-    val ctx = LocalContext.current
-    val icon = remember(uiState.appIcon) {
+    val resources = LocalResources.current
+    val icon = remember(uiState.appIcon, resources) {
         uiState.appIcon?.toBitmap()?.asImageBitmap()
-            ?: BitmapFactory.decodeResource(ctx.resources, R.drawable.icon_placeholder)
+            ?: BitmapFactory.decodeResource(resources, R.drawable.icon_placeholder)
                 .asImageBitmap()
     }
 

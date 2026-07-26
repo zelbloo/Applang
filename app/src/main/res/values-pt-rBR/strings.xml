@@ -39,9 +39,6 @@
     <string name="permissions_required">Permissões necessárias</string>
     <string name="shizuku_required">É necessário o Shizuku, por favor instale e inicie o Shizuku, depois que as permissões do Shizuku forem concecidas ao app, será possível continuar.</string>
     <string name="proceed">Continuar</string>
-    <string name="warning">Aviso</string>
-    <string name="warning_system_apps">Selecionar idiomas de aplicativos do sistema não é recomendado, você tem certeza?</string>
-    <string name="cancel">Cancelar</string>
 
     <!-- About -->
     <string name="about">Sobre</string>
@@ -52,6 +49,5 @@
     <string name="view_source">Ver código fonte</string>
 
     <!-- Quick settings tile -->
-    <string name="loading">Carregando…</string>
     <string name="unavailable">Indisponível</string>
 </resources>

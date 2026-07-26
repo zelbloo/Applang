@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,13 +39,14 @@ fun AboutScreen(
     navigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val uriHandler = LocalUriHandler.current
 
     // Parsed once instead of on every recomposition.
-    val libraries = remember(context) {
+    val libraries = remember(resources) {
         Libs.Builder()
             .withJson(
-                context.resources.openRawResource(R.raw.aboutlibraries)
+                resources.openRawResource(R.raw.aboutlibraries)
                     .bufferedReader()
                     .use { it.readText() }
             )
