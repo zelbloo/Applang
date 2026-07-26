@@ -4,60 +4,44 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.style.TextOverflow
 
+/**
+ * Scaffold for the secondary screens: a collapsing large top app bar over scrollable content.
+ * The content receives the scaffold padding and is expected to apply it as its contentPadding.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseScreen(
+    title: String,
     modifier: Modifier = Modifier,
-    title: String? = null,
-    snackBarHost: SnackbarHostState = SnackbarHostState(),
-    topBar: (@Composable (TopAppBarScrollBehavior) -> Unit)? = null,
-    navIcon: (@Composable () -> Unit)? = null,
+    navIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val defScrollBehavior = topBar != null || title?.isNotEmpty() == true
-    val scrollBehavior =
-        if (defScrollBehavior)
-            TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-        else
-            null
-
-    val sbMod =
-        if (defScrollBehavior)
-            Modifier.nestedScroll(scrollBehavior!!.nestedScrollConnection)
-        else
-            Modifier
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .then(sbMod)
-            .then(modifier),
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            if (topBar != null) {
-                topBar(scrollBehavior!!)
-            } else if (title?.isNotEmpty() == true) {
-                TopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    navigationIcon = { navIcon?.invoke() },
-                    title = { Text(title) },
-                    actions = { actions(this) }
-                )
-            }
+            LargeTopAppBar(
+                title = {
+                    Text(text = title, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                },
+                navigationIcon = navIcon,
+                actions = actions,
+                scrollBehavior = scrollBehavior
+            )
         },
-        content = { content(it) }
+        content = content
     )
 }

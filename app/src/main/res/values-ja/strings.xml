@@ -31,8 +31,9 @@
     <string name="pinned">ピン留め</string>
     <string name="region">地域</string>
     <string name="all_languages">すべての言語</string>
-    <string name="pinned_ok">%1$s をピン留めしました</string>
-    <string name="unpinned">%1$s のピン留めを解除しました</string>
+    <string name="pin">ピン留め</string>
+    <string name="unpin">ピン留めを解除</string>
+    <string name="current_language">現在の言語</string>
 
     <!-- Dialogs -->
     <string name="permissions_required">必要な許可</string>

@@ -31,8 +31,9 @@
     <string name="pinned">置顶</string>
     <string name="region">地区</string>
     <string name="all_languages">全部语言</string>
-    <string name="pinned_ok">已置顶 %1$s</string>
-    <string name="unpinned">已取消置顶 %1$s</string>
+    <string name="pin">置顶</string>
+    <string name="unpin">取消置顶</string>
+    <string name="current_language">当前语言</string>
 
     <!-- Dialogs -->
     <string name="permissions_required">需要权限</string>

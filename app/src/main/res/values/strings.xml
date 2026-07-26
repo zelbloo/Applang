@@ -31,8 +31,9 @@
     <string name="pinned">Pinned</string>
     <string name="region">Region</string>
     <string name="all_languages">All languages</string>
-    <string name="pinned_ok">%1$s pinned</string>
-    <string name="unpinned">%1$s unpinned</string>
+    <string name="pin">Pin</string>
+    <string name="unpin">Unpin</string>
+    <string name="current_language">Current language</string>
 
     <!-- Dialogs -->
     <string name="permissions_required">Permissions required</string>

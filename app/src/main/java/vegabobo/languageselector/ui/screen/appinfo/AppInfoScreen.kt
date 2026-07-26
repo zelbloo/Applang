@@ -1,14 +1,12 @@
 package vegabobo.languageselector.ui.screen.appinfo
 
 import android.graphics.BitmapFactory
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,31 +16,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import vegabobo.languageselector.R
 import vegabobo.languageselector.ui.components.BackButton
 import vegabobo.languageselector.ui.components.LocaleItemList
 import vegabobo.languageselector.ui.components.QuickTextButton
 import vegabobo.languageselector.ui.components.Title
 import vegabobo.languageselector.ui.screen.BaseScreen
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppInfoScreen(
     appId: String,
@@ -50,77 +48,31 @@ fun AppInfoScreen(
     appInfoVm: AppInfoVm = hiltViewModel(),
 ) {
     val uiState by appInfoVm.uiState.collectAsState()
-    val ctx = LocalContext.current
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    fun pinToast(locale: String) {
-        val pinTxt =
-            ctx.resources.getString(R.string.pinned_ok).format(locale)
-        Toast.makeText(ctx, pinTxt, Toast.LENGTH_SHORT).show()
-    }
-
-    fun unpinToast(locale: String) {
-        val pinTxt =
-            ctx.resources.getString(R.string.unpinned).format(locale)
-        Toast.makeText(ctx, pinTxt, Toast.LENGTH_SHORT).show()
-    }
-
-    LaunchedEffect(Unit) {
+    LaunchedEffect(appId) {
         appInfoVm.initFromAppId(appId)
         appInfoVm.updatePinnedLangsFromSP()
     }
+
     BaseScreen(
         title = stringResource(R.string.app_language),
-        navIcon = {
-            BackButton { navigateBack() }
-        }
-    ) {
+        navIcon = { BackButton { navigateBack() } }
+    ) { innerPadding ->
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .padding(top = it.calculateTopPadding())
-                .animateContentSize(),
+            contentPadding = innerPadding,
+            modifier = Modifier.animateContentSize()
         ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 18.dp, end = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        modifier = Modifier.size(84.dp),
-                        bitmap = uiState.appIcon?.toBitmap()?.asImageBitmap()
-                            ?: BitmapFactory.decodeResource(
-                                ctx.resources, R.drawable.icon_placeholder
-                            ).asImageBitmap(),
-                        // Decorative: the app name is right next to it.
-                        contentDescription = null
-                    )
-                    Column(
-                        modifier = Modifier
-                            .padding(18.dp)
-                            .weight(1f)
-                    ) {
-                        Text(text = uiState.appName, fontSize = 22.sp, maxLines = 1)
-                        Text(text = uiState.appPackage, fontSize = 14.sp, maxLines = 1)
-                        Text(
-                            text = uiState.currentLanguage.ifEmpty { stringResource(R.string.system_default) },
-                            fontSize = 14.sp,
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
+            item { AppHeader(uiState) }
 
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     QuickTextButton(
                         modifier = Modifier.weight(1f),
@@ -143,70 +95,134 @@ fun AppInfoScreen(
                 }
             }
 
-            if (uiState.selectedLanguage != -1) {
+            val selectedRegion = uiState.listOfAllLanguages.getOrNull(uiState.selectedLanguage)
+            if (selectedRegion != null) {
                 item { Title(stringResource(R.string.region)) }
-                items(uiState.listOfAllLanguages[uiState.selectedLanguage].locales.size) { index ->
-                    val thisLangReg =
-                        uiState.listOfAllLanguages[uiState.selectedLanguage].locales[index]
-                    LocaleItemList(
-                        itemText = thisLangReg.name,
+                items(selectedRegion.locales.size) { index ->
+                    val locale = selectedRegion.locales[index]
+                    LocaleRow(
+                        locale = locale,
+                        uiState = uiState,
+                        appInfoVm = appInfoVm,
                         onClick = {
-                            appInfoVm.onClickLocale(thisLangReg)
+                            appInfoVm.onClickLocale(locale)
                             appInfoVm.onBackWhenSelectedLang()
                             coroutineScope.launch { listState.scrollToItem(0) }
-                        },
-                        onLongClick = {
-                            pinToast(thisLangReg.name)
-                            appInfoVm.onPinLang(thisLangReg)
                         }
                     )
                 }
             } else {
-                if (uiState.listOfPinnedLanguages.size != 0) {
+                if (uiState.listOfPinnedLanguages.isNotEmpty()) {
                     item { Title(stringResource(R.string.pinned)) }
                     items(uiState.listOfPinnedLanguages.size) { index ->
-                        val thisLanguage = uiState.listOfPinnedLanguages[index]
-                        LocaleItemList(
-                            itemText = thisLanguage.name,
-                            onClick = { appInfoVm.onClickLocale(thisLanguage) },
-                            onLongClick = {
-                                unpinToast(thisLanguage.name)
-                                appInfoVm.onRemovePin(thisLanguage)
-                            }
+                        val locale = uiState.listOfPinnedLanguages[index]
+                        LocaleRow(
+                            locale = locale,
+                            uiState = uiState,
+                            appInfoVm = appInfoVm,
+                            onClick = { appInfoVm.onClickLocale(locale) }
                         )
                     }
                 }
 
                 item { Title(stringResource(R.string.user_languages)) }
                 item {
-                    LocaleItemList(stringResource(R.string.system_default)) { appInfoVm.onClickResetLang() }
+                    LocaleItemList(
+                        itemText = stringResource(R.string.system_default),
+                        isSelected = uiState.currentLanguage.isEmpty(),
+                        onClick = { appInfoVm.onClickResetLang() }
+                    )
                 }
                 items(uiState.listOfSuggestedLanguages.size) { index ->
-                    val thisLanguage = uiState.listOfSuggestedLanguages[index]
-                    LocaleItemList(
-                        itemText = thisLanguage.name,
-                        onClick = { appInfoVm.onClickLocale(thisLanguage) },
-                        onLongClick = {
-                            pinToast(thisLanguage.name)
-                            appInfoVm.onPinLang(thisLanguage)
-                        }
+                    val locale = uiState.listOfSuggestedLanguages[index]
+                    LocaleRow(
+                        locale = locale,
+                        uiState = uiState,
+                        appInfoVm = appInfoVm,
+                        onClick = { appInfoVm.onClickLocale(locale) }
                     )
                 }
 
                 item { Title(stringResource(R.string.all_languages)) }
                 items(uiState.listOfAllLanguages.size) { index ->
-                    val thisLanguage = uiState.listOfAllLanguages[index]
-                    LocaleItemList(thisLanguage.language) {
-                        appInfoVm.onClickSingleLanguage(index)
-                        coroutineScope.launch { listState.scrollToItem(0) }
-                    }
+                    LocaleItemList(
+                        itemText = uiState.listOfAllLanguages[index].language,
+                        onClick = {
+                            appInfoVm.onClickSingleLanguage(index)
+                            coroutineScope.launch { listState.scrollToItem(0) }
+                        }
+                    )
                 }
             }
-            item { Spacer(modifier = Modifier.padding(it.calculateBottomPadding())) }
         }
     }
 
     if (uiState.selectedLanguage != -1)
         BackHandler { appInfoVm.onBackWhenSelectedLang() }
+}
 
+@Composable
+private fun LocaleRow(
+    locale: SingleLocale,
+    uiState: AppInfoState,
+    appInfoVm: AppInfoVm,
+    onClick: () -> Unit,
+) {
+    val isPinned = uiState.listOfPinnedLanguages.any { it.languageTag == locale.languageTag }
+    LocaleItemList(
+        itemText = locale.name,
+        isSelected = locale.name == uiState.currentLanguage,
+        isPinned = isPinned,
+        onTogglePin = { appInfoVm.onTogglePin(locale) },
+        onLongClick = { appInfoVm.onTogglePin(locale) },
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun AppHeader(uiState: AppInfoState) {
+    val ctx = LocalContext.current
+    val icon = remember(uiState.appIcon) {
+        uiState.appIcon?.toBitmap()?.asImageBitmap()
+            ?: BitmapFactory.decodeResource(ctx.resources, R.drawable.icon_placeholder)
+                .asImageBitmap()
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier.size(64.dp),
+            bitmap = icon,
+            // Decorative: the app name is right next to it.
+            contentDescription = null
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = uiState.appName,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = uiState.appPackage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = uiState.currentLanguage
+                    .ifEmpty { stringResource(R.string.system_default) },
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
 }

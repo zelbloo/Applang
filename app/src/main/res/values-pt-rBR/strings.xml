@@ -31,8 +31,9 @@
     <string name="pinned">Fixado</string>
     <string name="region">Região</string>
     <string name="all_languages">Todos os idiomas</string>
-    <string name="pinned_ok">%1$s fixado</string>
-    <string name="unpinned">%1$s desafixado</string>
+    <string name="pin">Fixar</string>
+    <string name="unpin">Desafixar</string>
+    <string name="current_language">Idioma atual</string>
 
     <!-- Dialogs -->
     <string name="permissions_required">Permissões necessárias</string>
