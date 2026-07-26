@@ -88,7 +88,7 @@ jobs:
           else
             version="${GITHUB_REF_NAME}"
           fi
-          name="language-selector-${version}.apk"
+          name="applang-${version}.apk"
           mkdir -p dist
           cp app/build/outputs/apk/release/app-release.apk "dist/${name}"
           echo "name=${name}" >> "$GITHUB_OUTPUT"

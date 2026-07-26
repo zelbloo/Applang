@@ -1,6 +1,8 @@
-### Language Selector
+### Applang
 
-Language Selector allows users to set individual app languages. It tries to replicates the behavior of the "App languages" feature introduced in Android 13.
+Applang allows users to set individual app languages. It tries to replicates the behavior of the "App languages" feature introduced in Android 13.
+
+This is a fork of [VegaBobo/Language-Selector](https://github.com/VegaBobo/Language-Selector).
 
 To use this app:
 - MUST be on Android 13 or higher, there is no compatiblity with older Android versions.
@@ -19,7 +21,7 @@ You can get this app at Releases section.
 - Allows selecting language from any app **
 - Quick change languages with QSTile
 
-** Language Selector DOES NOT translate apps, it just specify a locale that will be used by application, if the desired language is supported by the app, it should be displayed as expected.
+** Applang DOES NOT translate apps, it just specify a locale that will be used by application, if the desired language is supported by the app, it should be displayed as expected.
 
 ** Please note that changing locale for unsupported applications and system apps may cause unexpected behavior and is NOT RECOMMENDED.
 
@@ -31,7 +33,7 @@ This app parses Locale (java.util.Locale) from Locale.getAvailableLocales(), con
 
 Before using this app, you MUST install and start Shizuku, the way this app works makes Shizuku MANDATORY, after that, you should follow this steps:
 
-1. Install "Language Selector" (check Releases)
+1. Install "Applang" (check Releases)
 2. Open, grant Shizuku permissions and tap on "Proceed"
 3. Choose a app you want to select it's language.
 4. Select any language from list
@@ -39,7 +41,7 @@ Before using this app, you MUST install and start Shizuku, the way this app work
 
 #### Pinning languages
 
-You can pin languages by long-pressing on desired language, pinned languages will appear at the top of the list and will also be available in the QS tile.
+You can pin languages with the pin button on the right of each language, or by long-pressing it. Pinned languages will appear at the top of the list and will also be available in the QS tile.
 
 #### Quick tile
 
